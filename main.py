@@ -47,6 +47,9 @@ def main(POST_ID=None):
     redditid = id(reddit_object)
     length, number_of_comments = save_text_to_mp3(reddit_object)
     length = math.ceil(length)
+    
+    #print_step(f"{number_of_comments}, {length}, {reddit_object["thread_post"]}, {bg_config}")
+
     download_screenshots_of_reddit_posts(reddit_object, number_of_comments)
     bg_config = get_background_config()
     download_background(bg_config)

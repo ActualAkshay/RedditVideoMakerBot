@@ -74,7 +74,8 @@ def download_screenshots_of_reddit_posts(reddit_object: dict, screenshot_num: in
             print_substep("Skipping translation...")
 
         postcontentpath = f"assets/temp/{id}/png/title.png"
-        page.locator('[data-test-id="post-content"]').screenshot(path= postcontentpath)
+        # Screenshoting only the title instead of full post content - ActualAkshay
+        page.locator('[data-test-id="post-content"] > div:nth-child(3)').screenshot(path= postcontentpath)
 
         if storymode:
             page.locator('[data-click-id="text"]').screenshot(

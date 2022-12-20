@@ -2,11 +2,13 @@
 import multiprocessing
 import os
 import re
+import pickle
 from os.path import exists
 from typing import Tuple, Any
+from moviepy.editor import *
 from moviepy.audio.AudioClip import concatenate_audioclips, CompositeAudioClip
 from moviepy.audio.io.AudioFileClip import AudioFileClip
-from moviepy.video.VideoClip import ImageClip
+from moviepy.video.VideoClip import ImageClip, TextClip
 from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
 from moviepy.video.compositing.concatenate import concatenate_videoclips
 from moviepy.video.io.VideoFileClip import VideoFileClip
@@ -76,12 +78,24 @@ def make_final_video(
     )
 
     # Gather all audio clips
-    audio_clips = [AudioFileClip(f"assets/temp/{id}/mp3/{i}.mp3") for i in range(number_of_clips)]
-    audio_clips.insert(0, AudioFileClip(f"assets/temp/{id}/mp3/title.mp3"))
+    audio_clips = [AudioFileClip(f"assets/temp/{id}/mp3/{i}.mp3") for i in range(number_of_clips)] # get comment clips and insert them in audio_clips object array
+    audio_clips.insert(0, AudioFileClip(f"assets/temp/{id}/mp3/title.mp3")) # add title tts mp3 at index 0
+
+    # START Gather and Insert split post tts mp3 files
+    post_tts_list = [f for f in os.listdir(f"assets/temp/{id}/mp3") if re.match(r'post\.part[0-9]+.*\.mp3', f)]
+    post_tts_list.sort()
+
+    for index in range(len(post_tts_list)):
+        audio_clips.insert(index+1, AudioFileClip(f"assets/temp/{id}/mp3/{post_tts_list[index]}")) # add post tts parts at relevant indexes
+    #END ather and Insert split post tts mp3 files
+
     audio_concat = concatenate_audioclips(audio_clips)
     audio_composite = CompositeAudioClip([audio_concat])
-
+    
+    
     console.log(f"[bold green] Video Will Be: {length} Seconds Long")
+
+
     # add title to video
     image_clips = []
     # Gather all images
@@ -97,6 +111,25 @@ def make_final_video(
         .crossfadeout(new_transition),
     )
 
+    #START Insert post text captions
+    post_captions = pickle.load(open(f"assets/temp/{id}/mp3/post.pickle", "rb"))    # getting post captions text into an array to use as captions
+    #print(post_captions)  # debug
+  
+    # for index in range(len(post_tts_list)): 
+    # for index in range(len(post_tts_list)): 
+    # for index in range(len(post_tts_list)): 
+    image_clips.append(
+            TextClip("Test", fontsize = 75, color = 'black')
+            .set_pos('center')
+            .set_duration(audio_clips[index + 1].duration)
+            .resize(width=W - 100)
+            .set_opacity(new_opacity)
+            .crossfadein(new_transition)
+            .crossfadeout(new_transition)
+        )
+        
+    #END Insert post text captions
+    
     for i in range(0, number_of_clips):
         image_clips.append(
             ImageClip(f"assets/temp/{id}/png/comment_{i}.png")

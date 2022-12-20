@@ -2,7 +2,7 @@
 from pathlib import Path
 from typing import Tuple
 import re
-
+import pickle
 # import sox
 # from mutagen import MutagenError
 # from mutagen.mp3 import MP3, HeaderNotFoundError
@@ -58,10 +58,10 @@ class TTSEngine:
 
         print_step("Saving Text to MP3 files...")
 
-        self.call_tts("title", process_text(self.reddit_object["thread_title"]))
+        self.call_tts("title", process_text(self.reddit_object["thread_title"])) # converting thread title to mp3
         processed_text = process_text(self.reddit_object["thread_post"])
         if processed_text != "" and settings.config["settings"]["storymode"] == True:
-            self.call_tts("posttext", processed_text)
+            self.split_tts(processed_text, "post")  # Splitting and convert post lines to mp3
 
         idx = None
         for idx, comment in track(enumerate(self.reddit_object["comments"]), "Saving..."):
@@ -98,7 +98,6 @@ class TTSEngine:
 
             self.call_tts(f"{idx}-{idy - offset}.part", new_text)
             split_files.append(AudioFileClip(f"{self.path}/{idx}-{idy - offset}.part.mp3"))
-
         CompositeAudioClip([concatenate_audioclips(split_files)]).write_audiofile(
             f"{self.path}/{idx}.mp3", fps=44100, verbose=False, logger=None
         )
@@ -108,11 +107,20 @@ class TTSEngine:
             i.close()
             Path(name).unlink()
 
-        # for i in range(0, idy + 1):
-        # print(f"Cleaning up {self.path}/{idx}-{i}.part.mp3")
-
-        # Path(f"{self.path}/{idx}-{i}.part.mp3").unlink()
-
+    def split_tts(self, text: str, filebasename: str, concatenate: bool = True):
+        split_text = re.findall(r'(?:\d[,.]|[^,.])*(?:[,.]|$)', text)
+        split_text = list(filter(None, split_text))
+        #print(split_text) # debug
+        with open(f"{self.path}/{filebasename}.pickle", "wb") as file:
+            pickle.dump(split_text, file)    # Saving text to use as captions
+        offset = 0
+        for idy, text_cut in enumerate(split_text):
+            new_text = process_text(text_cut)
+            if not new_text or new_text.isspace():
+                offset += 1
+                continue
+            self.call_tts(f"{filebasename}.part{idy - offset}", new_text)
+                       
     def call_tts(self, filename: str, text: str):
         self.tts_module.run(text, filepath=f"{self.path}/{filename}.mp3")
         # try:
