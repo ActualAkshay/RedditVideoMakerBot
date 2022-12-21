@@ -1,3 +1,7 @@
+/*
+* Edit this css to style the captions anyway you want
+*/
+
 body{
     background-color: #1a1a1b;
     color:#d7dadc;
@@ -15,6 +19,9 @@ span{
     font-weight: 400;
     line-height: 21px;
     word-break: break-word;
+   /*
+   Uncomment to center the text
     display: flex; 
     justify-content: center
+    */
 }
