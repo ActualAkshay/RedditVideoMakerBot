@@ -33,7 +33,7 @@ The only original thing being done is the editing and gathering of all materials
 ## Requirements
 
 - Python 3.10
-- ImageMagick for Python
+- wkhtmltopdf
 - Playwright (this should install automatically in installation)
 
 ## Installation 👩‍💻
@@ -41,12 +41,7 @@ The only original thing being done is the editing and gathering of all materials
 1. Clone this repository
 2. Run `pip install -r requirements.txt`
 3. Run `python -m playwright install` and `python -m playwright install-deps`
-4. Run `sudo apt install imagemagick`
-
-If running the setup on GitHub.dev fails to work
-5. Change Permissions of `/etc/ImageMagick-6/policy.xml` using `sudo chmod 777 /etc/ImageMagick-6/policy.xml`
-6. Open `/etc/ImageMagick-6/policy.xml` in editor and uncomment following line `<policy domain="coder" rights="read|write" pattern="{GIF,JPEG,PNG,WEBP}" />`
-7. Modify `` to `<policy domain="coder" rights="read | write" pattern="PDF" />`
+4. Run `sudo apt-get install wkhtmltopdf`
 
 **EXPERIMENTAL!!!!**
 

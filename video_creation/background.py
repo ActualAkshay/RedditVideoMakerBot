@@ -36,13 +36,15 @@ def get_background_config():
     except AttributeError:
         print_substep("No background selected. Picking random background'")
         choice = None
-
+    logo_path = settings.config["settings"]["background"]["logo"]
+    animation_path = settings.config["settings"]["background"]["animation"]
     # Handle default / not supported background using default option.
     # Default : pick random from supported background.
     if not choice or choice not in background_options:
         choice = random.choice(list(background_options.keys()))
 
-    return background_options[choice]
+    return background_options[choice], logo_path, animation_path
+
 
 
 def download_background(background_config: Tuple[str, str, str, Any]):
@@ -91,3 +93,4 @@ def chop_background_video(background_config: Tuple[str, str, str, Any], video_le
             new.write_videofile(f"assets/temp/{id}/background.mp4")
     print_substep("Background video chopped successfully!", style="bold green")
     return background_config[2]
+

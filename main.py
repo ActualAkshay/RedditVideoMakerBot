@@ -46,15 +46,12 @@ def main(POST_ID=None):
     global redditid
     redditid = id(reddit_object)
     length, number_of_comments = save_text_to_mp3(reddit_object)
-    length = math.ceil(length)
-    
-    #print_step(f"{number_of_comments}, {length}, {reddit_object["thread_post"]}, {bg_config}")
-
+    # length = math.ceil(length)
     download_screenshots_of_reddit_posts(reddit_object, number_of_comments)
-    bg_config = get_background_config()
+    bg_config, logo_path, animation_path = get_background_config()
     download_background(bg_config)
     chop_background_video(bg_config, length, reddit_object)
-    make_final_video(number_of_comments, length, reddit_object, bg_config)
+    make_final_video(number_of_comments, length, reddit_object, bg_config, logo_path, animation_path)
 
 
 def run_many(times):

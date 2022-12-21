@@ -5,7 +5,8 @@ import re
 from typing import Dict
 from utils import settings
 from playwright.async_api import async_playwright  # pylint: disable=unused-import
-
+import PIL
+from PIL import Image
 # do not remove the above line
 
 from playwright.sync_api import sync_playwright, ViewportSize
@@ -73,9 +74,26 @@ def download_screenshots_of_reddit_posts(reddit_object: dict, screenshot_num: in
         else:
             print_substep("Skipping translation...")
 
-        postcontentpath = f"assets/temp/{id}/png/title.png"
-        # Screenshoting only the title instead of full post content - ActualAkshay
-        page.locator('[data-test-id="post-content"] > div:nth-child(3)').screenshot(path= postcontentpath)
+        post_title_ss = f"assets/temp/{id}/png/title"
+
+        # START Screenshoting only the title instead of full post content - ActualAkshay
+        page.locator('[data-test-id="post-content"] > div:nth-child(2)').screenshot(path= f"{post_title_ss}.part1.png")        
+        page.locator('[data-test-id="post-content"] > div:nth-child(3)').screenshot(path= f"{post_title_ss}.part2.png")
+        
+        total_height = 0
+        max_width = 0
+        tt_ss_a    = [ Image.open(i) for i in [f"{post_title_ss}.part1.png", f"{post_title_ss}.part2.png"] ]
+        for img in tt_ss_a:
+            total_height += img.size[1]
+            max_width = max(max_width, img.size[0])
+        final_title_ss = Image.new('RGB', (max_width, total_height))
+        current_height = 0
+        for img in tt_ss_a:
+            final_title_ss.paste(img, (0,current_height))
+            current_height += img.size[1]
+        final_title_ss.save(f"{post_title_ss}.png")
+
+        # END cutom Screenshot title
 
         if storymode:
             page.locator('[data-click-id="text"]').screenshot(
