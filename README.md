@@ -41,7 +41,10 @@ The only original thing being done is the editing and gathering of all materials
 1. Clone this repository
 2. Run `pip install -r requirements.txt`
 3. Run `python -m playwright install` and `python -m playwright install-deps`
-4. Run `sudo apt-get install wkhtmltopdf`
+4. Run `sudo apt-get install wkhtmltopdf` on MacOS/Linux
+   OR
+   Download and install from wkhtmltopdf https://wkhtmltopdf.org/downloads.html for Windows
+
 
 **EXPERIMENTAL!!!!**
 

@@ -84,16 +84,14 @@ def make_final_video(
     )
 
     # Gather all audio clips
-    # audio_clips = [AudioFileClip(f"assets/temp/{id}/mp3/{i}.mp3") for i in range(number_of_clips)] # get comment clips and insert them in audio_clips object array
+    
     audio_clips = []
     audio_clips.insert(0, AudioFileClip(f"assets/temp/{id}/mp3/title.mp3")) # add title tts mp3 at index 0
 
     # START Gather and Insert split post tts mp3 files
-    post_tts_list = [f for f in os.listdir(f"assets/temp/{id}/mp3") if re.match(r'post\.part[0-9]+.*\.mp3', f)]
-    post_tts_list.sort()
-
-    for index in range(len(post_tts_list)):
-        audio_clips.insert(index+1, AudioFileClip(f"assets/temp/{id}/mp3/{post_tts_list[index]}")) # add post tts parts at relevant indexes
+    audio_list_len= len(pickle.load(open(f"assets/temp/{id}/mp3/post.pickle", "rb")))
+    for index in range(audio_list_len):
+        audio_clips.insert(index+1, AudioFileClip(f"assets/temp/{id}/mp3/post.part{index}.mp3")) # add post tts parts at relevant indexes
     #END ather and Insert split post tts mp3 files
 
     audio_concat = concatenate_audioclips(audio_clips)
@@ -113,15 +111,16 @@ def make_final_video(
         ImageClip(f"assets/temp/{id}/png/title.png")
         .set_duration(audio_clips[0].duration)
         .resize(width=W - 100)
+        .set_position(("center",400))
         .set_opacity(new_opacity)
         .crossfadein(new_transition)
         .crossfadeout(new_transition),
     )
 
     #START Insert post text captions
-        # getting post captions text into an array to use as captions
+    # getting post captions text into an array to use as captions
     post_captions = pickle.load(open(f"assets/temp/{id}/mp3/post.pickle", "rb"))    
-    #print(post_captions)  # debug
+    # print(len(post_captions))  # debug
     
     # CSS to choose for text to image conversion
     if settings.config["settings"]["theme"] == "dark":
