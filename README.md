@@ -45,6 +45,10 @@ The only original thing being done is the editing and gathering of all materials
    OR
    Download and install from wkhtmltopdf https://wkhtmltopdf.org/downloads.html for Windows
 
+**IMPORTANT!!!!**
+Restart your Windows PC if you get wkhtmltopdf not found error after installing it.
+
+
 
 **EXPERIMENTAL!!!!**
 

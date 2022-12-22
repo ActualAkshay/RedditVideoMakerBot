@@ -111,7 +111,7 @@ def make_final_video(
         ImageClip(f"assets/temp/{id}/png/title.png")
         .set_duration(audio_clips[0].duration)
         .resize(width=W - 100)
-        .set_position(("center",400))
+        .margin(bottom=300, opacity=0) # for pulling Title image up towards logo
         .set_opacity(new_opacity)
         .crossfadein(new_transition)
         .crossfadeout(new_transition),
@@ -147,24 +147,16 @@ def make_final_video(
         
     #END Insert post text captions
     
-    for i in range(0, number_of_clips):
-        image_clips.append(
-            ImageClip(f"assets/temp/{id}/png/comment_{i}.png")
-            .set_duration(audio_clips[i + 1].duration)
-            .resize(width=W - 100)
-            .set_opacity(new_opacity)
-            .crossfadein(new_transition)
-            .crossfadeout(new_transition)
-        )
-    # if os.path.exists("assets/mp3/posttext.mp3"):
-    #    image_clips.insert(
-    #        0,
-    #        ImageClip("assets/png/title.png")
-    #        .set_duration(audio_clips[0].duration + audio_clips[1].duration)
-    #        .set_position("center")
-    #        .resize(width=W - 100)
-    #        .set_opacity(float(opacity)),
-    #    )
+    if False: # used to disable comment feature temporarily
+        for i in range(0, number_of_clips):
+            image_clips.append(
+                ImageClip(f"assets/temp/{id}/png/comment_{i}.png")
+                .set_duration(audio_clips[i + 1].duration)
+                .resize(width=W - 100)
+                .set_opacity(new_opacity)
+                .crossfadein(new_transition)
+                .crossfadeout(new_transition)
+            )
     # else: story mode stuff
     total_duration = sum([i.duration for i in image_clips])
 

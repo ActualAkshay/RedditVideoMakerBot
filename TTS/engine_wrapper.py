@@ -63,19 +63,21 @@ class TTSEngine:
         if processed_text != "" and settings.config["settings"]["storymode"] == True:
             self.split_tts(processed_text, "post")  # Splitting and convert post lines to mp3
 
-        idx = None
-        for idx, comment in track(enumerate(self.reddit_object["comments"]), "Saving..."):
-            # ! Stop creating mp3 files if the length is greater than max length.
-            if self.length > self.max_length:
-                self.length -= self.last_clip_length
-                idx -= 1
-                break
-            if (
-                len(comment["comment_body"]) > self.tts_module.max_chars
-            ):  # Split the comment if it is too long
-                self.split_post(comment["comment_body"], idx)  # Split the comment
-            else:  # If the comment is not too long, just call the tts engine
-                self.call_tts(f"{idx}", process_text(comment["comment_body"]))
+        idx = 0
+        if False: # Set it to True to enable comment loop
+            # print("Debug")
+            for idx, comment in track(enumerate(self.reddit_object["comments"]), "Saving..."):
+                # ! Stop creating mp3 files if the length is greater than max length.
+                if self.length > self.max_length:
+                    self.length -= self.last_clip_length
+                    idx -= 1
+                    break
+                if (
+                    len(comment["comment_body"]) > self.tts_module.max_chars
+                ):  # Split the comment if it is too long
+                    self.split_post(comment["comment_body"], idx)  # Split the comment
+                else:  # If the comment is not too long, just call the tts engine
+                    self.call_tts(f"{idx}", process_text(comment["comment_body"]))
 
         print_substep("Saved Text to MP3 files successfully.", style="bold green")
         return self.length, idx
