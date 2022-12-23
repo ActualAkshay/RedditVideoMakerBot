@@ -2,6 +2,8 @@
 * Edit this css to style the captions anyway you want
 */
 
+@import url(http://fonts.googleapis.com/css?family=Noto+Sans); /*Importing Noto Sans from google, Reddit uses this fon't for its body*/
+
 body{
     background-color: #1a1a1b;
     color: #d7dadc;    
