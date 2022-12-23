@@ -4,25 +4,22 @@
 
 body{
     background-color: #ffffff;
-    color:#1c1c1c;
+    color: #1c1c1c;
+    text-align: center; /*Change this to center for center alignment*/
+    width: 460px;
+    text-rendering: geometricPrecision
 }
 
-
 span{
-    display: block;
-    width: 480px;
+    display: flex; 
+    justify-content: center;
     margin-block-start: 1em;
     margin-block-end: 1em;
     margin-inline-start: 0px;
     margin-inline-end: 0px;
     font-family: Noto Sans,Arial,sans-serif;
-    font-size: 18px; /* 14px is reddit default*/
+    font-size: 18px;
     font-weight: 400;
     line-height: 21px;
     word-break: break-word;
-   /*
-   Uncomment to center the text
-    display: flex; 
-    justify-content: center
-    */
 }

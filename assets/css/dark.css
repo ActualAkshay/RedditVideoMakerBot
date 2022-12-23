@@ -4,14 +4,15 @@
 
 body{
     background-color: #1a1a1b;
-    color:#d7dadc;
+    color: #d7dadc;    
+    text-align: center; /*Change this to center for center alignment*/
+    width: 460px;
+    text-rendering: geometricPrecision
 }
 
 span{
     display: flex; 
-    text-align: center;
     justify-content: center;
-    width: 460px;
     margin-block-start: 1em;
     margin-block-end: 1em;
     margin-inline-start: 0px;
