@@ -8,20 +8,17 @@ body{
 }
 
 span{
-    display: block;
-    width: 480px;
+    display: flex; 
+    text-align: center;
+    justify-content: center;
+    width: 460px;
     margin-block-start: 1em;
     margin-block-end: 1em;
     margin-inline-start: 0px;
     margin-inline-end: 0px;
     font-family: Noto Sans,Arial,sans-serif;
-    font-size: 18px; /* 14px is reddit default*/
+    font-size: 18px;
     font-weight: 400;
     line-height: 21px;
     word-break: break-word;
-   /*
-   Uncomment to center the text
-    display: flex; 
-    justify-content: center
-    */
 }
