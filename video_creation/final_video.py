@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 import multiprocessing
+import time
 import os
 import re
 import pickle
+from typing import Tuple, Any
 import imgkit
 import math
 from os.path import exists
-from typing import Tuple, Any
 from moviepy.audio.AudioClip import concatenate_audioclips, CompositeAudioClip
 from moviepy.audio.io.AudioFileClip import AudioFileClip
 from moviepy.video.VideoClip import ImageClip
@@ -15,12 +16,10 @@ from moviepy.video.compositing.concatenate import concatenate_videoclips
 from moviepy.video.fx import mask_color
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
-import moviepy as mp
 from rich.console import Console
 
 from utils.cleanup import cleanup
 from utils.console import print_step, print_substep
-from utils.video import Video
 from utils.videos import save_data
 from utils import settings
 
@@ -101,7 +100,7 @@ def make_final_video(
     console.log(f"[bold green] Video Will Be: {math.ceil(length)} Seconds Long")
 
 
-    # add title to video
+    # BEGIN: Title Stuff
     image_clips = []
     # Gather all images
     new_opacity = 1 if opacity is None or float(opacity) >= 1 else float(opacity)
@@ -114,23 +113,38 @@ def make_final_video(
         .margin(bottom=300, opacity=0) # for pulling Title image up towards logo
         .set_opacity(new_opacity)
         .crossfadein(new_transition)
-        .crossfadeout(new_transition),
+        .crossfadeout(new_transition)
     )
+    # END: Title Stuff
 
-    #START Insert post text captions
+    #BEGIN: Post Text Captions Stuff
     # getting post captions text into an array to use as captions
     post_captions = pickle.load(open(f"assets/temp/{id}/mp3/post.pickle", "rb"))    
     # print(len(post_captions))  # debug
     
     # CSS to choose for text to image conversion
-    if settings.config["settings"]["theme"] == "dark":
-        css = 'assets/css/dark.css'
+        
+    css = settings.config["captions"]["theme"]
+    render_width_config = settings.config["captions"]["render_width"]
+    render_width=480 if render_width_config is None else render_width_config
+    max_width_config = settings.config["captions"]["width_on_video"]
+    max_width=980 if max_width_config is None else max_width_config
+    cap_margin_right_config = settings.config["captions"]["margin_right"]
+    cap_margin_right=0 if cap_margin_right_config is None else cap_margin_right_config
+    
+    if not exists(css):
+        if settings.config["settings"]["theme"] == "dark":
+            print_substep("Using Dark theme for captions...")
+            css = 'assets/css/captions/dark.css' # Default theme for dark mode
+        else:
+            print_substep("Using Light theme for captions...")
+            css = 'assets/css/captions/light.css' # Default theme for dark mode
     else:
-        css = 'assets/css/light.css'
+        print_substep(f"Using custom theme for captions... {css}")
     
     options = {
     'format': 'png',
-    'crop-w':  480,
+    'crop-w':  render_width,
     'quiet': ''
     }
     for idy, post_line in enumerate(post_captions):
@@ -138,43 +152,71 @@ def make_final_video(
 
         image_clips.append(
                 ImageClip(f"assets/temp/{id}/png/post.part{idy}.png")
-                .resize(width=W - 100)
+                .resize(width=max_width)
+                .margin(right=cap_margin_right, opacity=0)
                 .set_duration(audio_clips[idy + 1].duration)
                 .set_opacity(new_opacity)
                 .crossfadein(new_transition)
                 .crossfadeout(new_transition)
         )
-        
-    #END Insert post text captions
+    #END: Post Text Caption stuff
+
     
-    if False: # used to disable comment feature temporarily
-        for i in range(0, number_of_clips):
-            image_clips.append(
-                ImageClip(f"assets/temp/{id}/png/comment_{i}.png")
-                .set_duration(audio_clips[i + 1].duration)
-                .resize(width=W - 100)
-                .set_opacity(new_opacity)
-                .crossfadein(new_transition)
-                .crossfadeout(new_transition)
-            )
-    # else: story mode stuff
+        # for i in range(0, number_of_clips):
+        #     image_clips.append(
+        #         ImageClip(f"assets/temp/{id}/png/comment_{i}.png")
+        #         .set_duration(audio_clips[i + 1].duration)
+        #         .resize(width=W - 100)
+        #         .set_opacity(new_opacity)
+        #         .crossfadein(new_transition)
+        #         .crossfadeout(new_transition)
+        #     )
+    
+    # BEGIN: Logo stuff
     total_duration = sum([i.duration for i in image_clips])
+    logo_transition_config = settings.config["settings"]["background"]["logo_fadein_duration"]
+    if logo_transition_config is None:
+        logo_transition = 0
+    elif logo_transition_config > 2:
+        logo_transition = 2 
+    else:
+        logo_transition = float(logo_transition_config)
 
     logo = (ImageClip(logo_path)
             .set_duration(total_duration)
             .resize(height=400)  # if you need to resize...
             .margin(top=300, opacity=0)  # (optional) logo-border padding
+            .crossfadein(logo_transition)
             .set_pos(("center", "top")))
+    #END: Logo stuff
+
+    #BEGIN: Animation STuff
+
     animation_clip = VideoFileClip(animation_path)
 
+    animation_width_config = settings.config["settings"]["background"]["animation_width"]
+    animation_width= animation_clip.w if animation_width_config is None else animation_width_config
+    animation_margin_r_config = settings.config["settings"]["background"]["animation_margin_right"]
+    animation_margin_right=0 if animation_margin_r_config is None else animation_margin_r_config
+    
+    showat_con=settings.config["settings"]["background"]["animation_show_at"]
+    showat = "end" if showat_con == "start" or showat_con == "middle" else showat_con
+    
+    showat_time = (total_duration - animation_clip.duration)/2
+    showat_time=0 if showat_con == "start" else total_duration - animation_clip.duration
+        
     masked_clip = mask_color.mask_color(animation_clip, color=[64, 222, 0], thr=150, s=5)
-
-    masked_clip = masked_clip.set_start(total_duration - animation_clip.duration).margin(bottom=300, opacity=0).set_pos(
-        ('center', 'bottom'))
+    masked_clip = (masked_clip
+                    .resize(width=animation_width)
+                    .set_start(showat_time)
+                    .margin(bottom=300,right=animation_margin_right, opacity=0)
+                    .set_pos(('center', 'bottom')))
     img_clip_pos = 'center'  # background_config[3]
     image_concat = concatenate_videoclips(image_clips).set_position(
         img_clip_pos
     )  # note transition kwarg for delay in imgs
+    #END: Animation stuff
+
 
     image_concat.audio = audio_composite
     final = CompositeVideoClip([background_clip, image_concat, logo, masked_clip])
@@ -200,7 +242,6 @@ def make_final_video(
     # )
 
     # final = CompositeVideoClip([final, logo])
-
     final.write_videofile(
         f"assets/temp/{id}/temp.mp4",
         fps=30,
@@ -208,6 +249,7 @@ def make_final_video(
         audio_bitrate="192k",
         verbose=False,
         threads=multiprocessing.cpu_count(),
+        temp_audiofile=f"assets/temp/{id}/audio.mp4"
     )
     ffmpeg_extract_subclip(
         f"assets/temp/{id}/temp.mp4",
@@ -216,11 +258,8 @@ def make_final_video(
         targetname=f"results/{subreddit}/{filename}",
     )
     save_data(subreddit, filename, title, idx, background_config[1])
-    print_step("Removing temporary files 🗑")
-    cleanups = cleanup(id)
-    print_substep(f"Removed {cleanups} temporary files 🗑")
+    cleanup()
     print_substep("See result in the results folder!")
-
     print_step(
-        f'Reddit title: {reddit_obj["thread_title"]} \n Background Credit: {background_config[1]}'
+        f'Reddit title: {reddit_obj["thread_title"]} \nBackground Credit: {background_config[1]}'
     )
