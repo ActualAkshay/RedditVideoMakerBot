@@ -1,14 +1,12 @@
 #!/usr/bin/env python
-import math
-import re
 from subprocess import Popen
 from os import name
-
+import time
 from prawcore import ResponseException
 
 from reddit.subreddit import get_subreddit_threads
 from utils.cleanup import cleanup
-from utils.console import print_markdown, print_step, print_substep
+from utils.console import print_markdown, print_step
 from utils import settings
 from utils.id import id
 from utils.version import checkversion
@@ -57,10 +55,11 @@ def main(POST_ID=None):
 def run_many(times):
     for x in range(1, times + 1):
         print_step(
-            f'on the {x}{("th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th")[x % 10]} iteration of {times}'
+            f'On the {x}{("th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th")[x % 10]} iteration of {times}.'
         )  # correct 1st 2nd 3rd 4th 5th....
         main()
-        Popen("cls" if name == "nt" else "clear", shell=True).wait()
+        if x!=times:
+            Popen("cls" if name == "nt" else "clear", shell=True).wait()
 
 
 def shutdown():
@@ -68,12 +67,10 @@ def shutdown():
     try:
         redditid
     except NameError:
-        print("Exiting...")
-        exit()
+        print("Exiting...\n")
     else:
-        cleanup(redditid)
-        print("Exiting...")
-        exit()
+        cleanup()
+        print("Exiting...\n")
 
 if __name__ == "__main__":
     config = settings.check_toml("utils/.config.template.toml", "config.toml")
@@ -92,13 +89,11 @@ if __name__ == "__main__":
                 Popen("cls" if name == "nt" else "clear", shell=True).wait()
         else:
             main()
+            
     except KeyboardInterrupt:
         shutdown()
     except ResponseException:
         # error for invalid credentials
         print_markdown("## Invalid credentials")
         print_markdown("Please check your credentials in the config.toml file")
-
         shutdown()
-
-        # todo error
